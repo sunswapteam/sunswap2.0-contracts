@@ -1,0 +1,22 @@
+{
+  "name": "sunswap2.0-contracts",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "sed -e 's/0.5.10/0.6.8/g' tronbox-config.js > tronbox.js && tronbox compile && cp tronbox-config.js tronbox.js && tronbox compile",
+    "migrate": "tronbox migrate --network nile --f 1 --to 3"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "tronbox": "git+https://github.com/suniodev02/tronbox.git#009402ebdf15bbc92cc56d6a00d40d703e3aa7ce",
+    "axios": "^0.21.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "mocha": "^8.1.3",
+    "prettier": "^2.1.2",
+    "yarn": "^1.22.18"
+  }
+}

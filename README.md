@@ -13,7 +13,7 @@ To get started, first create and initialize a [NodeJS 8.0+ environment](https://
 ```bash
 git clone https://github.com/sunswapteam/sunswap2.0-contracts.git
 cd sunswap2.0-contracts
-pip install
+npm install
 ```
 
 ### OS requirement

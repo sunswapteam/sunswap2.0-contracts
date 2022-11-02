@@ -17,8 +17,9 @@ npm install
 ```
 
 ### OS requirement
- * Linux
- * Mac OS X
+
+- Linux
+- Mac OS X
 
 ### Compile
 

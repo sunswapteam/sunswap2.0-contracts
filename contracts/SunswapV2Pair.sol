@@ -1,4 +1,5 @@
-pragma solidity =0.5.10;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity >=0.6.12 <0.8.0;
 
 import './interfaces/ISunswapV2Pair.sol';
 import './SunswapV2ERC20.sol';
@@ -13,21 +14,21 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     using SafeMath  for uint;
     using UQ112x112 for uint224;
 
-    uint public constant MINIMUM_LIQUIDITY = 10**3;
+    uint public constant override MINIMUM_LIQUIDITY = 10**3;
 
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
-    address public factory;
-    address public token0;
-    address public token1;
+    address public override factory;
+    address public override token0;
+    address public override token1;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint32  private blockTimestampLast; // uses single storage slot, accessible via getReserves
 
-    uint public price0CumulativeLast;
-    uint public price1CumulativeLast;
-    uint public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
+    uint public override price0CumulativeLast;
+    uint public override price1CumulativeLast;
+    uint public override kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
 
     uint private unlocked = 1;
     modifier lock() {
@@ -37,7 +38,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
         unlocked = 1;
     }
 
-    function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
+    function getReserves() public view override returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
         _blockTimestampLast = blockTimestampLast;
@@ -61,7 +62,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // called once by the factory at time of deployment
-    function initialize(address _token0, address _token1) external {
+    function initialize(address _token0, address _token1) external override {
         require(msg.sender == factory, 'SunswapV2: FORBIDDEN');
         // sufficient check
         token0 = _token0;
@@ -106,7 +107,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function mint(address to) external lock returns (uint liquidity) {
+    function mint(address to) external override lock returns (uint liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         uint balance0 = IERC20(token0).balanceOf(address(this));
         uint balance1 = IERC20(token1).balanceOf(address(this));
@@ -117,7 +118,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
         uint _totalSupply = totalSupply; // gas savings, must be defined here since totalSupply can update in _mintFee
         if (_totalSupply == 0) {
             liquidity = Math.sqrt(amount0.mul(amount1)).sub(MINIMUM_LIQUIDITY);
-           _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
+            _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the first MINIMUM_LIQUIDITY tokens
         } else {
             liquidity = Math.min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
         }
@@ -130,7 +131,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external lock returns (uint amount0, uint amount1) {
+    function burn(address to) external override lock returns (uint amount0, uint amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         address _token0 = token0;                                // gas savings
         address _token1 = token1;                                // gas savings
@@ -155,7 +156,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock {
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external override lock {
         require(amount0Out > 0 || amount1Out > 0, 'SunswapV2: INSUFFICIENT_OUTPUT_AMOUNT');
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         require(amount0Out < _reserve0 && amount1Out < _reserve1, 'SunswapV2: INSUFFICIENT_LIQUIDITY');
@@ -163,21 +164,21 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
         uint balance0;
         uint balance1;
         { // scope for _token{0,1}, avoids stack too deep errors
-        address _token0 = token0;
-        address _token1 = token1;
+            address _token0 = token0;
+            address _token1 = token1;
             require(to != _token0 && to != _token1, 'SunswapV2: INVALID_TO');
-        if (amount0Out > 0) TransferHelper.safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
-        if (amount1Out > 0) TransferHelper.safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
-            if (data.length > 0) ISunswapV2Callee(to).uniswapV2Call(msg.sender, amount0Out, amount1Out, data);
-        balance0 = IERC20(_token0).balanceOf(address(this));
-        balance1 = IERC20(_token1).balanceOf(address(this));
+            if (amount0Out > 0) TransferHelper.safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
+            if (amount1Out > 0) TransferHelper.safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
+            if (data.length > 0) ISunswapV2Callee(to).sunswapV2Call(msg.sender, amount0Out, amount1Out, data);
+            balance0 = IERC20(_token0).balanceOf(address(this));
+            balance1 = IERC20(_token1).balanceOf(address(this));
         }
         uint amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
         uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
         require(amount0In > 0 || amount1In > 0, 'SunswapV2: INSUFFICIENT_INPUT_AMOUNT');
         { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-        uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(3));
-        uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
+            uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(3));
+            uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
             require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(1000 ** 2), 'SunswapV2: K');
         }
 
@@ -186,7 +187,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // force balances to match reserves
-    function skim(address to) external lock {
+    function skim(address to) external override lock {
         address _token0 = token0; // gas savings
         address _token1 = token1; // gas savings
         TransferHelper.safeTransfer(_token0, to, IERC20(_token0).balanceOf(address(this)).sub(reserve0));
@@ -194,7 +195,7 @@ contract SunswapV2Pair is ISunswapV2Pair, SunswapV2ERC20 {
     }
 
     // force reserves to match balances
-    function sync() external lock {
+    function sync() external override lock {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
     }
 }

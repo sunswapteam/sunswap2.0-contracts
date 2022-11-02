@@ -1,4 +1,6 @@
-pragma solidity >=0.5.10;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity >=0.6.12 <0.8.0;
+
 // helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
 library TransferHelper {
     // nile:0xECa9bC828A3005B9a3b909f2cc5c2a54794DE05F  mainnet:0xa614f803B6FD780986A42c78Ec9c7f77e6DeD13C

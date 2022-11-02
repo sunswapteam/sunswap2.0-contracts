@@ -1,20 +1,15 @@
-pragma solidity >=0.6.6;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity >=0.6.12 <0.8.0;
 
+import './interfaces/ISunswapV2Router02.sol';
+
+import './interfaces/IERC20.sol';
 import './interfaces/ISunswapV2Factory.sol';
+import './interfaces/ISunswapV2ERC20.sol';
+import './interfaces/IWETH.sol';
 import './lib/contracts/libraries/TransferHelper.sol';
-
-import './interfaces/ISunswapV2Router02.sol';
-import './libraries/SunswapV2Library.sol';
 import './libraries/SafeMath.sol';
-import './interfaces/IERC20.sol';
-import './interfaces/IWETH.sol';
-
-
-import './interfaces/ISunswapV2Router02.sol';
 import './libraries/SunswapV2Library.sol';
-import './libraries/SafeMath.sol';
-import './interfaces/IERC20.sol';
-import './interfaces/IWETH.sol';
 
 contract SunswapV2Router02 is ISunswapV2Router02 {
     using SafeMath for uint;
@@ -23,7 +18,7 @@ contract SunswapV2Router02 is ISunswapV2Router02 {
     address public immutable override WETH;
 
     modifier ensure(uint deadline) {
-require(deadline >= block.timestamp, 'SunswapV2Router: EXPIRED');
+        require(deadline >= block.timestamp, 'SunswapV2Router: EXPIRED');
         _;
     }
 
@@ -47,20 +42,20 @@ require(deadline >= block.timestamp, 'SunswapV2Router: EXPIRED');
     ) internal virtual returns (uint amountA, uint amountB) {
         // create the pair if it doesn't exist yet
         if (ISunswapV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
-ISunswapV2Factory(factory).createPair(tokenA, tokenB);
+            ISunswapV2Factory(factory).createPair(tokenA, tokenB);
         }
-(uint reserveA, uint reserveB) = SunswapV2Library.getReserves(factory, tokenA, tokenB);
+        (uint reserveA, uint reserveB) = SunswapV2Library.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
-uint amountBOptimal = SunswapV2Library.quote(amountADesired, reserveA, reserveB);
+            uint amountBOptimal = SunswapV2Library.quote(amountADesired, reserveA, reserveB);
             if (amountBOptimal <= amountBDesired) {
-require(amountBOptimal >= amountBMin, 'SunswapV2Router: INSUFFICIENT_B_AMOUNT');
+                require(amountBOptimal >= amountBMin, 'SunswapV2Router: INSUFFICIENT_B_AMOUNT');
                 (amountA, amountB) = (amountADesired, amountBOptimal);
             } else {
-uint amountAOptimal = SunswapV2Library.quote(amountBDesired, reserveB, reserveA);
+                uint amountAOptimal = SunswapV2Library.quote(amountBDesired, reserveB, reserveA);
                 assert(amountAOptimal <= amountADesired);
-require(amountAOptimal >= amountAMin, 'SunswapV2Router: INSUFFICIENT_A_AMOUNT');
+                require(amountAOptimal >= amountAMin, 'SunswapV2Router: INSUFFICIENT_A_AMOUNT');
                 (amountA, amountB) = (amountAOptimal, amountBDesired);
             }
         }
@@ -76,10 +71,10 @@ require(amountAOptimal >= amountAMin, 'SunswapV2Router: INSUFFICIENT_A_AMOUNT');
         uint deadline
     ) external virtual override ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-liquidity = ISunswapV2Pair(pair).mint(to);
+        liquidity = ISunswapV2Pair(pair).mint(to);
     }
     function addLiquidityETH(
         address token,
@@ -97,7 +92,7 @@ liquidity = ISunswapV2Pair(pair).mint(to);
             amountTokenMin,
             amountETHMin
         );
-            address pair = SunswapV2Library.pairFor(factory, token, WETH);
+        address pair = SunswapV2Library.pairFor(factory, token, WETH);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
         assert(IWETH(WETH).transfer(pair, amountETH));
@@ -116,13 +111,13 @@ liquidity = ISunswapV2Pair(pair).mint(to);
         address to,
         uint deadline
     ) public virtual override ensure(deadline) returns (uint amountA, uint amountB) {
-    address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
-    ISunswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
-    (uint amount0, uint amount1) = ISunswapV2Pair(pair).burn(to);
-    (address token0,) = SunswapV2Library.sortTokens(tokenA, tokenB);
+        address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
+        ISunswapV2ERC20(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        (uint amount0, uint amount1) = ISunswapV2Pair(pair).burn(to);
+        (address token0,) = SunswapV2Library.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
-    require(amountA >= amountAMin, 'SunswapV2Router: INSUFFICIENT_A_AMOUNT');
-    require(amountB >= amountBMin, 'SunswapV2Router: INSUFFICIENT_B_AMOUNT');
+        require(amountA >= amountAMin, 'SunswapV2Router: INSUFFICIENT_A_AMOUNT');
+        require(amountB >= amountBMin, 'SunswapV2Router: INSUFFICIENT_B_AMOUNT');
     }
     function removeLiquidityETH(
         address token,
@@ -155,9 +150,9 @@ liquidity = ISunswapV2Pair(pair).mint(to);
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external virtual override returns (uint amountA, uint amountB) {
-    address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = SunswapV2Library.pairFor(factory, tokenA, tokenB);
         uint value = approveMax ? uint(-1) : liquidity;
-    ISunswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        ISunswapV2ERC20(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountA, amountB) = removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
     }
     function removeLiquidityETHWithPermit(
@@ -169,9 +164,9 @@ liquidity = ISunswapV2Pair(pair).mint(to);
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external virtual override returns (uint amountToken, uint amountETH) {
-address pair = SunswapV2Library.pairFor(factory, token, WETH);
+        address pair = SunswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
-ISunswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        ISunswapV2ERC20(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountETH) = removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline);
     }
 
@@ -206,9 +201,9 @@ ISunswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s)
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external virtual override returns (uint amountETH) {
-    address pair = SunswapV2Library.pairFor(factory, token, WETH);
+        address pair = SunswapV2Library.pairFor(factory, token, WETH);
         uint value = approveMax ? uint(-1) : liquidity;
-    ISunswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
+        ISunswapV2ERC20(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         amountETH = removeLiquidityETHSupportingFeeOnTransferTokens(
             token, liquidity, amountTokenMin, amountETHMin, to, deadline
         );
@@ -223,7 +218,7 @@ ISunswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s)
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
             address to = i < path.length - 2 ? SunswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
-    ISunswapV2Pair(SunswapV2Library.pairFor(factory, input, output)).swap(
+            ISunswapV2Pair(SunswapV2Library.pairFor(factory, input, output)).swap(
                 amount0Out, amount1Out, to, new bytes(0)
             );
         }

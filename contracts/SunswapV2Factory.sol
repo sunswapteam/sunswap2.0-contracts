@@ -1,14 +1,15 @@
-pragma solidity =0.5.10;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity >=0.6.12 <0.8.0;
 
 import './interfaces/ISunswapV2Factory.sol';
 import './SunswapV2Pair.sol';
 
 contract SunswapV2Factory is ISunswapV2Factory {
-    address public feeTo;
-    address public feeToSetter;
+    address public override feeTo;
+    address public override feeToSetter;
 
-    mapping(address => mapping(address => address)) public getPair;
-    address[] public allPairs;
+    mapping(address => mapping(address => address)) public override getPair;
+    address[] public override allPairs;
 
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
@@ -16,11 +17,11 @@ contract SunswapV2Factory is ISunswapV2Factory {
         feeToSetter = _feeToSetter;
     }
 
-    function allPairsLength() external view returns (uint) {
+    function allPairsLength() external view override returns (uint) {
         return allPairs.length;
     }
 
-    function createPair(address tokenA, address tokenB) external returns (address pair) {
+    function createPair(address tokenA, address tokenB) external override returns (address pair) {
         require(tokenA != tokenB, 'SunswapV2: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'SunswapV2: ZERO_ADDRESS');
@@ -38,17 +39,17 @@ contract SunswapV2Factory is ISunswapV2Factory {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 
-    function setFeeTo(address _feeTo) external {
+    function setFeeTo(address _feeTo) external override {
         require(msg.sender == feeToSetter, 'SunswapV2: FORBIDDEN');
         feeTo = _feeTo;
     }
 
-    function setFeeToSetter(address _feeToSetter) external {
+    function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, 'SunswapV2: FORBIDDEN');
         feeToSetter = _feeToSetter;
     }
 
-    function getPairHash() public view returns (bytes32) {
+    function getPairHash() public pure returns (bytes32) {
         return keccak256(type(SunswapV2Pair).creationCode);
     }
 }

@@ -1,7 +1,7 @@
-var factory = artifacts.require("./SunswapV2Factory.sol");
+var factory = artifacts.require('./SunswapV2Factory.sol');
 
-const feeToSetter = 'TD8yz5cppxLgNPGKK87L4YCgUTvoxwMUox' 
+const feeToSetter = 'TD8yz5cppxLgNPGKK87L4YCgUTvoxwMUox';
 
-module.exports = function(deployer) {
-  deployer.deploy(factory, feeToSetter);
+module.exports = function (deployer, network) {
+  if (network == 'nile') deployer.deploy(factory, feeToSetter);
 };

@@ -1,4 +1,5 @@
 # SunSwap2.0-contracts
+> ⚠️ **DEPRECATED**: This project is no longer maintained. Please check out [sun-protocol/SunswapV2-Contracts](https://github.com/sun-protocol/SunswapV2-Contracts) instead.
 
 [![Tests](https://github.com/sunswapteam/sunswap2.0-contracts/actions/workflows/tests.yml/badge.svg)](https://github.com/sunswapteam/sunswap2.0-contracts/actions/workflows/tests.yml)
 
